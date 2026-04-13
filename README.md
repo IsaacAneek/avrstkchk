@@ -1,13 +1,14 @@
-![avrstk](https://github.com/user-attachments/assets/1fbe993b-960e-46e4-b98c-6520d245324e)
-# avrstkchk
-avrstkchk is a simple static stack analyzer tool for AVR microcontrollers. It generates worst case stack usage and function call graph directly from assembly code from .elf files.
-Currently it can only get plain stack usage of functions (recursion call and ISR call depth are not not taken into account). Also since it depends on assembly instructions, it only works for AVR platforms.
+<div align="center">
+<h1>avrstkchk</h1>
+avrstkchk is a simple static stack analyzer tool for AVR microcontrollers. It generates worst case stack usage and function call graph directly from assembly generated from .elf files. It can also detect recursion and simulate recursion call depth. Simulating ISR call depth will be added in future. Since it depends on assembly instructions, it only works for AVR platforms.
+</div>
+
 # TODO
-- [ ] Detect recursion
-- [ ] Simulate recursion call depth
+- [x] ~~Detect recursion~~
+- [x] ~~Simulate recursion call depth~~
 - [ ] Simulate ISR call depth
 - [ ] Build a GUI
-- [ ] Refactor code
+- [ ] Refactor code 
 # Usage
 ## Windows
 - Install <a href="https://luabinaries.sourceforge.net/">Lua Binaries</a>
