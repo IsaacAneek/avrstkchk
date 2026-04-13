@@ -1,5 +1,7 @@
 FunctionStackUsage = {}
 FunctionCallGraph = {}
+-- not clear who owns these global variables and when
+
 
 local stack_usage_current_function = 2
 local current_function = ""
@@ -56,6 +58,8 @@ end
 
 function GetFunctionInfoFromASMFile(asm_file)
 	for line in asm_file:lines() do
+		-- order dependent behaviour
+		-- refactor
 		parse_stack_frame_pointer_adjustment(line)
 		parse_call_instruction(line)
 		parse_rcall_instruction(line)
