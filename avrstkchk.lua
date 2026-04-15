@@ -1,11 +1,11 @@
 FunctionStackUsage = {}
 FunctionCallGraph = {}
+ASMLines = {}
 -- not clear who owns these global variables and when
 
 
 local stack_usage_current_function = 2
 local current_function = ""
-local hex_str = ""
 
 -- local asm_file = io.open("E:\\avr-playground\\firmware.asm", "r")
 function OpenAsmFile(filepath)
@@ -41,37 +41,57 @@ local function parse_rcall_instruction(line)
 	end
 end
 
-local function parse_stack_frame_pointer_adjustment(line)
+
+local function parse_stack_frame_pointer_adjustment(asm_line_index)
+	local in0x3e = nil
+	local lower_nibble = nil
+	local upper_nibble = nil
+	local hex_str = ""
+
 	-- match r28 and r29 registers (which are used as frame pointers in avr)
 	-- capture the values bcs these values are substracted from stack pointer
-	local nibble = string.match(line, "s...%s+r2[89],%s*0x(%x+)")
-	if nibble then
-		hex_str = hex_str .. nibble:reverse()
-		if hex_str:len() == 4 then
+
+	-- match "in	r29, 0x3e" instruction bcs after this, the frame pointer is adjusted
+	in0x3e = string.match(ASMLines[asm_line_index], "in%s+r29%s*,%s*0x3e")
+
+	if in0x3e then
+		lower_nibble = string.match(ASMLines[asm_line_index + 1], "s%a+%s+r28,%s*0x(%x+)")
+		upper_nibble = string.match(ASMLines[asm_line_index + 2], "sbc[i]?%s+r29,%s*0x(%x+)")
+	end
+
+	if in0x3e then
+		if lower_nibble then
+			hex_str = hex_str .. lower_nibble:reverse()
+		end
+		if upper_nibble then
+			hex_str = hex_str .. upper_nibble:reverse()
+		end
+		if hex_str ~= "" then
 			-- this 'hex' is the size of the array allocated on the stack
 			local hex = tonumber(hex_str:reverse(), 16)
 			stack_usage_current_function = stack_usage_current_function + hex
-			hex_str = ""
 		end
 	end
 end
 
 function GetFunctionInfoFromASMFile(asm_file)
 	for line in asm_file:lines() do
+		table.insert(ASMLines, line)
+	end
+	for index, line in ipairs(ASMLines) do
 		-- order dependent behaviour
 		-- refactor
-		parse_stack_frame_pointer_adjustment(line)
+		parse_stack_frame_pointer_adjustment(index)
 		parse_call_instruction(line)
 		parse_rcall_instruction(line)
 		parse_push_instruction(line)
-		local new_func_name = line:match("%x%x%x%x%x%x%x%x <([%w_]+)>")
+		local new_func_name = line:match("%x%x%x%x%x%x%x%x <([^L][^L].+)>")
 		-- if found new function
 		-- update and reset all the function data
 		-- and continue calculating the data of new function
 		if new_func_name ~= current_function and new_func_name then
 			FunctionStackUsage[current_function] = stack_usage_current_function
 			stack_usage_current_function = 2
-			hex_str = ""
 			FunctionCallGraph[new_func_name] = {
 				calls = {},          -- contains callee function names
 				is_recursive = false,
@@ -128,6 +148,7 @@ if asm_file then
 	SimulateRecursionDepth()
 	print_stack_usage()
 	print_call_graph()
+	print(FunctionStackUsage["_Z13LTC6811_rdauxhP9cell_asic"])
 	asm_file:close()
 end
 
