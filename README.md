@@ -6,6 +6,7 @@ avrstkchk is a simple static stack analyzer tool for AVR microcontrollers. It ge
 # TODO
 - [x] ~~Detect recursion~~
 - [x] ~~Simulate recursion call depth~~
+- [ ] Calculate function call depth
 - [ ] Simulate ISR call depth
 - [ ] Build a GUI
 - [ ] Refactor code 

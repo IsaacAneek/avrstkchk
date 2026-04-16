@@ -7,7 +7,6 @@ ASMLines = {}
 local stack_usage_current_function = 2
 local current_function = ""
 
--- local asm_file = io.open("E:\\avr-playground\\firmware.asm", "r")
 function OpenAsmFile(filepath)
 	local asm_file = io.open(filepath, "r")
 	return asm_file
